@@ -1,0 +1,137 @@
+<html>
+    <head>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.min.js"></script>
+        <script src="./index.js"></script>
+        <script>
+
+            const fullBackoffJitter = new FullBackoffJitter({
+                events: {
+                    output: output
+                }
+            });
+
+            function output(data){
+                console.log(data);
+                document.getElementById('output').innerHTML+= data + '<br>';
+            }
+
+            function createScatterChart(datasets, ctx){
+                var scatterChart = new Chart(ctx, {
+                    type: 'scatter',
+                    data: {
+                        datasets: datasets
+                    },
+                    options: {
+                        scales: {
+                            xAxes: [{
+                                type: 'linear',
+                                position: 'bottom'
+                            }],
+                            yAxes: [{
+                                type: 'linear',
+                                position: 'left'
+                            }]
+                        }
+                    }
+                });
+            }
+
+            function applyDataAsScatterChart(wrapperEl, state){
+                const data = state.data;
+                const count = data.reduce((accumulator, currentValue)=>{
+                    let val = (currentValue.isClash) ? 1 : 0;
+                    return accumulator + val;
+                }, 0);
+                output('---');
+                output(`Clash count: ${count}`);
+                output(`Success count: ${state.successCount}`);
+                output(`Failure count: ${state.failureCount}`);
+                output('---');
+                const formattedData = data.map((item)=>{
+                    /*
+                    item = {
+                        ms: from 0,
+                        isClash: boolean
+                    }
+                    */
+                    return {
+                        x: item.ms,
+                        y: 1//??
+                    };
+                });
+                const datasets = [{
+                    label: 'Scatter Dataset',
+                    data: formattedData
+                }];
+                const chart = createScatterChart(datasets, wrapperEl);
+                console.log('chart', chart);
+            }
+
+            function demo(){
+                const options = getOptions();
+                fullBackoffJitter.compare(options)
+                .then((state)=>{
+                    console.log('Compare results: ', state);
+                    applyDataAsScatterChart(document.getElementById('defaultChart'), state.default);
+                    applyDataAsScatterChart(document.getElementById('fullBackoffJitterChart'), state.fullBackoffJitter);
+                });
+            }
+
+            function getOptions(){
+                const options = {
+                    connections: document.getElementById('sim-count').value,
+                    maxConnections: document.getElementById('max-sim-count').value,
+                    duration: document.getElementById('duration').value,
+                    penalty: document.getElementById('penalty').value,
+                    maxAttempts: document.getElementById('max').value,
+                    maxSingleDuration: document.getElementById('max-single-duration').value
+                };
+                for(let key in options){
+                    options[key] = Number(options[key]);
+                }
+                return options;
+            }
+
+        </script>
+        <style>
+            h1{
+                text-align: center;
+            }
+
+            table{
+                margin-bottom: 10px;
+            }
+
+            .inputs{
+                width: fit-content;
+            }
+
+            .demo-button{
+                float: right;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Full Backoff Jitter Test</h1>
+        <div class="inputs">
+            <table>
+                <tr><th>Simultaneous attempting connections: </th><td><input id="sim-count" type="number" value="100" min="1"></td></tr>
+                <tr><th>Max simultaneously connected connections: </th><td><input id="max-sim-count" type="number" value="5" min="1"></td></tr>
+                <tr><th>Execution time(ms): </th><td><input id="duration" type="number" value="10" min="1"></td></tr>
+                <tr><th>Clash penalty(Usually wasted roundtrip time. ms): </th><td><input id="penalty" type="number" value="200" min="1"></td></tr>
+                <tr><th>Max attempts: </th><td><input id="max" type="number" value="6" min="0"></td></tr>
+                <tr><th>Max single duration(ms): </th><td><input id="max-single-duration" type="number" value="30000" min="0"></td></tr>
+            </table>
+            <input class="demo-button" type="button" value="test" onclick="demo()">
+        </div>
+        
+        <div id="output">
+            <!-- OUTPUT -->
+        </div>
+
+        <div id="charts">
+            <canvas width="400" height="400" id="defaultChart"></canvas>
+            <canvas width="400" height="400" id="fullBackoffJitterChart"></canvas>
+        </div>
+    </body>
+</html>
