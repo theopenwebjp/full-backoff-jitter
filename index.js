@@ -255,4 +255,9 @@ class FullBackoffJitter{
     }
 }
 
-window.FullBackoffJitter = FullBackoffJitter;
+if(typeof window === 'object'){
+    window.FullBackoffJitter = FullBackoffJitter;
+}
+if(typeof module === 'object'){
+    module.exports = FullBackoffJitter;
+}

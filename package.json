@@ -1,0 +1,20 @@
+{
+  "name": "full-backoff-jitter",
+  "version": "1.0.0",
+  "description": "Full backoff jitter algorithm with options, variations and time testing.",
+  "main": "index.js",
+  "scripts": {
+    
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/goldingdamien/full-backoff-jitter.git"
+  },
+  "keywords": [],
+  "author": "Damien Golding",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/goldingdamien/full-backoff-jitter/issues"
+  },
+  "homepage": "https://github.com/goldingdamien/full-backoff-jitter#readme"
+}
