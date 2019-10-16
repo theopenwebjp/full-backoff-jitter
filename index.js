@@ -1,4 +1,8 @@
 
+/**
+ * @param {number} ms
+ * @return {Promise}
+ */
 function sleep(ms){
     return new Promise((resolve)=>{
         window.setTimeout(resolve, ms);
@@ -7,6 +11,9 @@ function sleep(ms){
 
 class FullBackoffJitter{
 
+    /**
+     * @param {object} settings
+     */
     constructor(settings={}){
         this.events = {
             output: console.log

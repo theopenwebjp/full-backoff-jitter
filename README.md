@@ -4,7 +4,7 @@ Full backoff jitter algorithm with options, variations and time testing.
 
 ## Usage
 
-```
+```javascript
 const options = {
     connections: 20,
     maxConnections: 5,
