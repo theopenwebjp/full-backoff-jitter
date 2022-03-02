@@ -6,7 +6,11 @@ Uses es6 imports/exports. For commonjs, global, please build. If is considered a
 
 ## Usage
 
+`npm install @theopenweb/full-backoff-jitter`
+
 ```javascript
+import FullBackoffJitter from '@theopenweb/full-backoff-jitter'
+
 const options = {
     connections: 20,
     maxConnections: 5,

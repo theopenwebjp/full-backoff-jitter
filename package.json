@@ -1,20 +1,22 @@
 {
-  "name": "full-backoff-jitter",
+  "name": "@theopenweb/full-backoff-jitter",
   "version": "1.0.0",
   "description": "Full backoff jitter algorithm with options, variations and time testing.",
   "main": "index.js",
-  "scripts": {
-    
-  },
+  "scripts": {},
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/goldingdamien/full-backoff-jitter.git"
+    "url": "git+https://github.com/theopenwebjp/full-backoff-jitter.git"
   },
-  "keywords": [],
-  "author": "Damien Golding",
+  "keywords": ["full backoff jitter", "backoff", "jitter", "retry", "exponential", "リトライ", "アルゴリズム", "エクスポネンシャル", "バックオフとジッター"],
+  "author": "The Open Web <noreply@theopenweb.jp> (https://theopenweb.jp)",
+  "contributors": [
+    "Damien Golding <noreply@damiengolding.com> (https://damiengolding.com)"
+  ],
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/goldingdamien/full-backoff-jitter/issues"
+    "url": "https://github.com/theopenwebjp/full-backoff-jitter/issues"
   },
-  "homepage": "https://github.com/goldingdamien/full-backoff-jitter#readme"
+  "private": false,
+  "homepage": "https://theopenweb.info"
 }
