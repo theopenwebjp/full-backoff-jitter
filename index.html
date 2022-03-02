@@ -1,8 +1,8 @@
 <html>
     <head>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.min.js"></script>
-        <script src="./index.js"></script>
-        <script>
+        <script lang="js" type="module">
+            import FullBackoffJitter from './index.js'
 
             const fullBackoffJitter = new FullBackoffJitter({
                 events: {
@@ -10,11 +10,21 @@
                 }
             });
 
+            // Globals
+            window.demo = demo
+
+            /**
+             * @param {any} data 
+             **/
             function output(data){
                 console.log(data);
                 document.getElementById('output').innerHTML+= data + '<br>';
             }
 
+            /**
+             * @param {any} dataSets
+             * @param {any} ctx
+             **/
             function createScatterChart(datasets, ctx){
                 var scatterChart = new Chart(ctx, {
                     type: 'scatter',
@@ -36,6 +46,10 @@
                 });
             }
 
+            /**
+             * @param {any} wrapperEl
+             * @param {any} state
+             **/
             function applyDataAsScatterChart(wrapperEl, state){
                 const data = state.data;
                 const count = data.reduce((accumulator, currentValue)=>{
