@@ -1,6 +1,6 @@
 {
   "name": "@theopenweb/full-backoff-jitter",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Full backoff jitter algorithm with options, variations and time testing.",
   "main": "index.js",
   "scripts": {},

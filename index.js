@@ -2,13 +2,13 @@
  * @param {number} ms
  */
 function sleep(ms) {
-    return new Promise((resolve)=>{
+    return new Promise((resolve) => {
         window.setTimeout(resolve, ms);
     });
 }
 
 /**
- * @typedef {{ events: Partial<Events> }} ConstructorOptions
+ * @typedef {{ events?: Partial<Events> }} ConstructorOptions
  * @typedef {{ output: (str: string) => void }} Events
  */
 
@@ -68,7 +68,11 @@ class FullBackoffJitter {
 
         if (settings.events) {
             for (let key in settings.events) {
-                this.events[key] = settings.events[key];
+                const k = /** @type {keyof Events} */ (key);
+                const v = settings.events[k];
+                if (v) {
+                    this.events[k] = v;
+                }
             }
         }
     }
@@ -76,7 +80,7 @@ class FullBackoffJitter {
     /**
      * Compares time between immediate and full backup off jitter using options.
      * @param {FullBackoffJitterOptions} options 
-     * @return {Promise} resolves state with 2 state results.
+     * @return resolves state with 2 state results.
      */
     compare(options){
 
@@ -124,7 +128,7 @@ class FullBackoffJitter {
         // options.maxAllDuration = options.maxAllDuration || 60000; // 1 MINUTE
 
         /**
-         * @type {Promise[]}
+         * @type {Promise<void>[]}
          */
         const promises = [];
         for(let i=0; i<options.connections; i++){
@@ -163,7 +167,7 @@ class FullBackoffJitter {
 
                 func()
                 .then(resolve)
-                .catch((err)=>{
+                .catch((/** @type {any} */ err)=>{
                     // output('err:', err);
                     state.attempts++;
                     nextRound();
@@ -185,12 +189,14 @@ class FullBackoffJitter {
      * If the number of connections attempting connection is known, an estimation algorithm may give better results.
      * 
      * @see https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/
-     * @param {T} func
+     * @param {Function} func
      * @param {FullBackoffJitterOptions} options
      **/
     executeWithFullBackoffJitter(func, options = {}) {
         // Backoff
         // Jitter
+
+        const maxSingleDuration = options.maxSingleDuration || 100000
 
         let state = {
             attempts: 0,
@@ -198,12 +204,12 @@ class FullBackoffJitter {
         };
         
         const MAX_ATTEMPTS = options.maxAttempts || 10;
-        const randomBetween = (a, b) => { // a > b MUST = true
+        const randomBetween = (/** @type {number} */ a, /** @type {number} */ b) => { // a > b MUST = true
             const diff = b - a;
             return (a + (Math.random() * diff));
         };
         // Makes exponentially larger
-        const backupFunc = (n)=>{
+        const backupFunc = (/** @type {any} */ n)=>{
             const BASE = 3;
             const CONSTANT = 100; // Constant important for first attempts due to low values.
             const MULTIPLIER = 10;
@@ -211,15 +217,15 @@ class FullBackoffJitter {
             return (Math.pow(BASE, EXPONENT) * MULTIPLIER) + CONSTANT;
         };
         // Creates randomization.
-        const jitterFunc = (n, random=10)=>{
+        const jitterFunc = (/** @type {number} */ n, random=10)=>{
             return Math.round(randomBetween(n - random, n + random)); // min must be 1 or more.
         };
         // Should be between min & double larger.
-        const backoffJitterFunc = (n) => { // n=attempt number
+        const backoffJitterFunc = (/** @type {number} */ n) => { // n=attempt number
             if (!n) { n = 1; }
             let ms = backupFunc(n);
-            if (ms > options.maxSingleDuration) {
-                ms = options.maxSingleDuration;
+            if (ms > maxSingleDuration) {
+                ms = maxSingleDuration;
             }
             ms = jitterFunc(ms, ms/2);
             console.log('ms', ms);
@@ -234,7 +240,7 @@ class FullBackoffJitter {
 
                 func()
                 .then(resolve)
-                .catch((err)=>{
+                .catch((/** @type {any} */ err)=>{
                     // output('err:', err);
                     state.attempts++;
                     state.curSleepTime = backoffJitterFunc(state.attempts);
@@ -251,9 +257,13 @@ class FullBackoffJitter {
      * @param {Function} handle 
      * @param {FullBackoffJitterOptions} options
      * @param {State} state 
-     * @return {Promise}
+     * @return {Promise<void>}
      */
     _createPromise(handle, options, state) {
+
+        const maxConnections = options.maxConnections || Number.MAX_SAFE_INTEGER
+        const duration = options.duration || 1000
+        const penalty = options.penalty || 1000
         
         // Single execution
         const f = ()=>{
@@ -261,7 +271,7 @@ class FullBackoffJitter {
             // Clash info
             let curMs = Date.now();
             let isClash = false;
-            if(state.connectedCount >= options.maxConnections){
+            if(state.connectedCount >= maxConnections){
                 isClash = true;
             }
 
@@ -271,13 +281,16 @@ class FullBackoffJitter {
                 isClash: isClash
             });
 
-            return new Promise((resolve, reject)=>{
+            /**
+             * @type {Promise<void>}
+             */
+            const p = new Promise((resolve, reject)=>{
                 // this.events.output((isClash ? 'Clashed' : 'OK'));
                 if (!isClash) {
                     state.lastMs = curMs;
                     state.connectedCount++;
 
-                    sleep(options.duration)
+                    sleep(duration)
                     .then(()=>{
                         state.connectedCount--;
                         return resolve();
@@ -285,15 +298,19 @@ class FullBackoffJitter {
                 }
 
                 else {
-                    sleep(options.penalty).then(()=>{
+                    sleep(penalty).then(()=>{
                         return reject();
                     });
                 }
             });
+            return p
         };
 
         // Execution until max/complete.
-        return new Promise((resolve, reject)=>{
+        /**
+         * @type {Promise<void>}
+         */
+        const p = new Promise((resolve, reject)=>{
             handle(f, options)
             .then(()=>{
                 state.successCount++;
@@ -306,6 +323,7 @@ class FullBackoffJitter {
                 resolve();
             }); 
         });
+        return p
     }
 }
 
